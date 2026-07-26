@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   LogOut,
@@ -7,6 +7,8 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "@/auth/context";
+import { useThreads } from "@/api/chat";
+import { ChildSwitcher } from "./ChildSwitcher";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,17 +18,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Placeholder recents until the chat backend exists.
-const RECENTS_PLACEHOLDER = [
-  "Books for a 7-year-old",
-  "Fantasy series ideas",
-  "Summer reading list",
-];
+import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const { me, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const threads = useThreads();
 
   async function handleLogout() {
     await logout();
@@ -41,6 +39,8 @@ export function Sidebar() {
         <BookOpen className="h-5 w-5" />
         <span className="font-semibold">BookRec</span>
       </div>
+
+      <ChildSwitcher />
 
       <div className="px-3">
         <Button
@@ -60,16 +60,29 @@ export function Sidebar() {
           Recents
         </p>
         <nav className="space-y-0.5">
-          {RECENTS_PLACEHOLDER.map((title) => (
-            <button
-              key={title}
-              type="button"
-              disabled
-              className="w-full truncate rounded-md px-2 py-2 text-left text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent disabled:cursor-not-allowed"
-              title="Chat history is coming soon"
+          {threads.isLoading && (
+            <p className="px-2 py-2 text-sm text-muted-foreground">Loading…</p>
+          )}
+          {threads.isError && (
+            <p className="px-2 py-2 text-sm text-muted-foreground">
+              Couldn&apos;t load chats.
+            </p>
+          )}
+          {threads.data?.length === 0 && !threads.isLoading && (
+            <p className="px-2 py-2 text-sm text-muted-foreground">No chats yet.</p>
+          )}
+          {threads.data?.map((t) => (
+            <Link
+              key={t.thread_id}
+              to={`/c/${t.thread_id}`}
+              className={cn(
+                "block w-full truncate rounded-md px-2 py-2 text-left text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent",
+                location.pathname === `/c/${t.thread_id}` && "bg-sidebar-accent",
+              )}
+              title={t.title}
             >
-              {title}
-            </button>
+              {t.title}
+            </Link>
           ))}
         </nav>
       </div>

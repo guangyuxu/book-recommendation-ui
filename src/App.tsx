@@ -19,6 +19,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<ChatPage />} />
+          <Route path="/c/:threadId" element={<ChatPage />} />
           <Route path="/settings" element={<SettingsLayout />}>
             <Route index element={<OverviewSettings />} />
             <Route path="family" element={<FamilySettings />} />
