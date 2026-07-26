@@ -5,6 +5,9 @@
 //   refresh/logout calls.
 // - On a 401 for a protected call, we transparently hit /auth/refresh once, then retry the
 //   original request with the fresh token. A second 401 propagates as an ApiError.
+//
+// The browser calls the accounts service directly by absolute URL; the backend is CORS-enabled for
+// the UI origin. Override with VITE_API_BASE_URL to point at a different accounts origin.
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8001";
 
@@ -22,6 +25,11 @@ export function getAccessToken(): string | null {
 
 export function setOnAuthFailure(cb: (() => void) | null): void {
   onAuthFailure = cb;
+}
+
+// Let other clients (lib/chatApi.ts) drop to the logged-out state when their own refresh fails.
+export function notifyAuthFailure(): void {
+  onAuthFailure?.();
 }
 
 // The backend's uniform error envelope: { error: { code, message, request_id } }.
@@ -88,7 +96,9 @@ async function doFetch(path: string, opts: RequestOptions): Promise<Response> {
 // Refresh coordination: collapse concurrent refreshes into a single in-flight promise.
 let refreshInFlight: Promise<boolean> | null = null;
 
-async function refreshAccessToken(): Promise<boolean> {
+// Exported so the chat client (lib/chatApi.ts) shares one refresh-coordination point: concurrent
+// 401s across the accounts and chat clients collapse into a single /auth/refresh call.
+export async function refreshAccessToken(): Promise<boolean> {
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
       try {

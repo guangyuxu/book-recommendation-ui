@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { Child, ChildCreate, ChildUpdate } from "@/types/api";
 
-const childrenKey = ["children"] as const;
+export const childrenKey = ["children"] as const;
 
 export function useChildren() {
   return useQuery({
