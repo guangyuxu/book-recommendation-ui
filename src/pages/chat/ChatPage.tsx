@@ -19,6 +19,7 @@ import {
   streamResume,
   streamTurn,
 } from "@/lib/chatApi";
+import { useSyncOnChange } from "@/lib/syncOnChange";
 import { Button } from "@/components/ui/button";
 import type {
   ChatMessage,
@@ -451,10 +452,12 @@ function ThinkingTrace({
   streaming: boolean;
   thinking: boolean;
 }) {
-  const [open, setOpen] = useState(true);
-  useEffect(() => {
+  // Seeded from `streaming` rather than always-true-then-collapsed-by-an-effect: a trace mounted
+  // for an already-finished turn must render collapsed in its first frame, not expand and snap shut.
+  const [open, setOpen] = useState(streaming);
+  useSyncOnChange([streaming], () => {
     if (!streaming) setOpen(false);
-  }, [streaming]);
+  });
 
   const header = streaming
     ? "Thinking…"

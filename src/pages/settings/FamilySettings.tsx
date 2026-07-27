@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFamily, useUpdateFamily } from "@/api/family";
@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { apiErrorMessage, formatDate } from "@/lib/format";
+import { useSyncOnChange } from "@/lib/syncOnChange";
 import type { InviteResponse } from "@/types/api";
 
 export function FamilySettings() {
@@ -27,12 +28,12 @@ export function FamilySettings() {
   const [defaultLanguage, setDefaultLanguage] = useState("");
 
   // Seed the form once the family loads.
-  useEffect(() => {
+  useSyncOnChange([familyQuery.data], () => {
     if (familyQuery.data) {
       setFamilyName(familyQuery.data.family_name ?? "");
       setDefaultLanguage(familyQuery.data.default_language ?? "");
     }
-  }, [familyQuery.data]);
+  });
 
   async function saveFamily() {
     try {

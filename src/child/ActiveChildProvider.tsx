@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useChildren } from "@/api/children";
 import { ActiveChildContext, type ActiveChildState } from "./context";
 
@@ -12,26 +12,22 @@ export function ActiveChildProvider({
 }) {
   const query = useChildren();
   const list = useMemo(() => query.data ?? [], [query.data]);
-  const [activeChildId, setActiveChildId] = useState<string | null>(null);
+  // What the user picked. The *effective* selection is derived below, not stored: normalising it
+  // in an effect would re-render twice and briefly expose a selection pointing at a deleted child.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (list.length === 0) {
-      if (activeChildId !== null) setActiveChildId(null);
-      return;
-    }
-    const stillValid = list.some((c) => c.id === activeChildId);
-    if (!stillValid) {
-      // Auto-select when there's exactly one child; otherwise fall back to the first.
-      setActiveChildId(list[0].id);
-    }
-  }, [list, activeChildId]);
-
+  // Self-healing happens here, during render: an empty list has no active child, and a selection
+  // that no longer resolves falls back to the first (which is also what auto-selects a sole child).
   const activeChild = useMemo(
-    () => list.find((c) => c.id === activeChildId) ?? null,
-    [list, activeChildId],
+    () =>
+      list.length === 0
+        ? null
+        : (list.find((c) => c.id === selectedId) ?? list[0]),
+    [list, selectedId],
   );
+  const activeChildId = activeChild?.id ?? null;
 
-  const set = useCallback((id: string | null) => setActiveChildId(id), []);
+  const set = useCallback((id: string | null) => setSelectedId(id), []);
 
   const value = useMemo<ActiveChildState>(
     () => ({

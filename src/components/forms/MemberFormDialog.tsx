@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,7 @@ import {
   useUpsertMemberProfile,
 } from "@/api/members";
 import { apiErrorMessage } from "@/lib/format";
+import { useSyncOnChange } from "@/lib/syncOnChange";
 import type { Gender, Member } from "@/types/api";
 
 interface MemberFormDialogProps {
@@ -34,12 +35,13 @@ export function MemberFormDialog({
   const [current, setCurrent] = useState<Member | null>(member ?? null);
   const [active, setActive] = useState("basic");
 
-  useEffect(() => {
+  // Re-seed the wizard when it (re)opens, and when a fresh server row arrives while it is open.
+  useSyncOnChange([open, member], () => {
     if (open) {
       setCurrent(member ?? null);
       setActive("basic");
     }
-  }, [open, member]);
+  });
 
   const memberId = current?.id ?? null;
 
@@ -168,14 +170,14 @@ function MemberProfileStep({ memberId }: { memberId: string }) {
   const [communication, setCommunication] = useState("");
   const [concerns, setConcerns] = useState<string[]>([]);
 
-  useEffect(() => {
+  useSyncOnChange([query.data], () => {
     const p = query.data;
     if (!p) return;
     setOccupation(p.occupation_background ?? "");
     setEducation(p.education_background ?? "");
     setCommunication(p.communication_style ?? "");
     setConcerns(p.concerns ?? []);
-  }, [query.data]);
+  });
 
   useStepSave("profile", async () => {
     const hasContent =

@@ -20,7 +20,13 @@ export const RegisterContext = React.createContext<
 export function useStepSave(value: string, save: SaveFn): void {
   const register = React.useContext(RegisterContext);
   const saveRef = React.useRef(save);
-  saveRef.current = save;
+  // Repoint the ref after commit rather than during render: a render can be thrown away or
+  // replayed under concurrent rendering, so writing a ref from the render body is unsafe (this is
+  // what `react-hooks/refs` flags). The footer only ever calls the registered closure from a click
+  // handler, long after effects have run, so it still sees the latest save.
+  React.useEffect(() => {
+    saveRef.current = save;
+  });
   React.useEffect(() => {
     register(value, () => saveRef.current());
     return () => register(value, null);

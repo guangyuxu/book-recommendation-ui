@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -7,6 +7,7 @@ import {
 } from "@/api/readingProfile";
 import { ApiError } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/format";
+import { useSyncOnChange } from "@/lib/syncOnChange";
 import { Field } from "@/components/forms/Field";
 import { TagsInput } from "@/components/forms/TagsInput";
 import { BoolSelect } from "@/components/forms/BoolSelect";
@@ -72,7 +73,7 @@ export function ReadingProfilePanel({
     query.error instanceof ApiError && query.error.status === 404;
   const otherError = query.error && !notFound ? query.error : null;
 
-  useEffect(() => {
+  useSyncOnChange([query.data], () => {
     const p = query.data;
     if (!p) {
       setForm(EMPTY);
@@ -100,7 +101,7 @@ export function ReadingProfilePanel({
         avoid_topics: p.avoid_topics ?? [],
       },
     });
-  }, [query.data]);
+  });
 
   async function save(): Promise<boolean> {
     const body: ReadingProfileUpsert = {
