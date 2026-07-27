@@ -1,0 +1,7 @@
+# Build output and machine-written files. Everything else in the repo IS formatter-owned:
+# `make lint_format` checks the whole tree, so docs and workflow YAML drift is a failing check too.
+node_modules
+dist
+coverage
+package-lock.json
+*.tsbuildinfo

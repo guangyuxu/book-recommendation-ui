@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useFamily, useUpdateFamily } from "@/api/family";
-import {
-  useCreateInvite,
-  useInvites,
-  useRevokeInvite,
-} from "@/api/invites";
+import { useCreateInvite, useInvites, useRevokeInvite } from "@/api/invites";
 import { useMembers } from "@/api/members";
 import { QueryState } from "@/components/QueryState";
 import { PoliciesPanel } from "./PoliciesPanel";
@@ -59,10 +55,7 @@ export function FamilySettings() {
             Basic information about your family.
           </p>
         </div>
-        <QueryState
-          isLoading={familyQuery.isLoading}
-          error={familyQuery.error}
-        >
+        <QueryState isLoading={familyQuery.isLoading} error={familyQuery.error}>
           <div className="space-y-4">
             <Field label="Family name" htmlFor="family_name">
               <Input
@@ -173,8 +166,7 @@ function InvitesSection() {
           <CardHeader>
             <CardTitle className="text-base">Invite code created</CardTitle>
             <CardDescription>
-              Copy it now — it is shown only once and cannot be retrieved
-              again.
+              Copy it now — it is shown only once and cannot be retrieved again.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center gap-2">

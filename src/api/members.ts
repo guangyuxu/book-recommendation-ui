@@ -67,8 +67,7 @@ export function useUpsertMemberProfile() {
     }: {
       memberId: string;
       body: MemberProfileUpsert;
-    }) =>
-      api.put<MemberProfile>(`/family/members/${memberId}/profile`, body),
+    }) => api.put<MemberProfile>(`/family/members/${memberId}/profile`, body),
     onSuccess: (data, { memberId }) =>
       qc.setQueryData(memberProfileKey(memberId), data),
   });

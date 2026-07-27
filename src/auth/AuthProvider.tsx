@@ -7,15 +7,19 @@ import {
   signup as signupCall,
 } from "@/api/auth";
 import { api, setAccessToken, setOnAuthFailure } from "@/lib/api";
-import type { LoginRequest, Me, SignupRequest, TokenResponse } from "@/types/api";
+import type {
+  LoginRequest,
+  Me,
+  SignupRequest,
+  TokenResponse,
+} from "@/types/api";
 import { AuthContext, type AuthState } from "./context";
 
 // Owns the in-memory access token and the derived identity (`/me`). On mount it silently attempts a
 // refresh (using the HttpOnly cookie) so a returning user stays logged in across reloads.
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
-  const [status, setStatus] =
-    useState<AuthState["status"]>("loading");
+  const [status, setStatus] = useState<AuthState["status"]>("loading");
   const [me, setMe] = useState<Me | null>(null);
 
   const establishSession = useCallback(async () => {
@@ -37,10 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const tokens = await api.post<TokenResponse>("/auth/refresh", undefined, {
-          anonymous: true,
-          skipAuthRetry: true,
-        });
+        const tokens = await api.post<TokenResponse>(
+          "/auth/refresh",
+          undefined,
+          {
+            anonymous: true,
+            skipAuthRetry: true,
+          },
+        );
         setAccessToken(tokens.access_token);
         if (!cancelled) await establishSession();
       } catch {

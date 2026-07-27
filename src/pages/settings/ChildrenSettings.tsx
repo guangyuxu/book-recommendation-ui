@@ -43,7 +43,10 @@ export function ChildrenSettings() {
         </Button>
       </div>
 
-      <QueryState isLoading={childrenQuery.isLoading} error={childrenQuery.error}>
+      <QueryState
+        isLoading={childrenQuery.isLoading}
+        error={childrenQuery.error}
+      >
         {childrenQuery.data && childrenQuery.data.length > 0 ? (
           <ul className="divide-y divide-border rounded-lg border">
             {childrenQuery.data.map((child) => (

@@ -36,8 +36,8 @@ export function LoginPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   const from =
-    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ??
-    "/";
+    (location.state as { from?: { pathname: string } } | null)?.from
+      ?.pathname ?? "/";
 
   async function onSubmit(values: FormValues) {
     setFormError(null);

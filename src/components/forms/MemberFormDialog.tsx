@@ -5,7 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/forms/Field";
 import { GenderSelect } from "@/components/forms/GenderSelect";
 import { TagsInput } from "@/components/forms/TagsInput";
-import { StepDialog, useStepSave, type Step } from "@/components/forms/StepDialog";
+import { StepDialog, type Step } from "@/components/forms/StepDialog";
+import { useStepSave } from "@/components/forms/stepSave";
 import {
   useCreateMember,
   useMemberProfile,

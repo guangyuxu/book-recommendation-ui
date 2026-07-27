@@ -122,7 +122,9 @@ export function ChatPage() {
   const [sending, setSending] = useState(false);
   const [pending, setPending] = useState<ConfirmationRequest | null>(null);
   // An agent-side switch to another existing child, waiting on the user's confirmation to re-bind.
-  const [pendingSwitch, setPendingSwitch] = useState<PendingSwitch | null>(null);
+  const [pendingSwitch, setPendingSwitch] = useState<PendingSwitch | null>(
+    null,
+  );
 
   // Tracks which thread's transcript is currently in `messages`, so an in-flight stream (or a
   // just-created thread) is never clobbered by a stale history fetch.
@@ -181,7 +183,10 @@ export function ChatPage() {
   // --- transcript mutators ---
   const startAssistant = useCallback((): string => {
     const id = uid();
-    setMessages((m) => [...m, { id, role: "assistant", content: "", streaming: true }]);
+    setMessages((m) => [
+      ...m,
+      { id, role: "assistant", content: "", streaming: true },
+    ]);
     return id;
   }, []);
 
@@ -245,7 +250,11 @@ export function ChatPage() {
         if (tid && target && target !== bound) {
           if (switched && switched.to === target) {
             // A deliberate switch to another existing child: confirm before re-binding.
-            setPendingSwitch({ threadId: tid, to: target, toName: switched.toName });
+            setPendingSwitch({
+              threadId: tid,
+              to: target,
+              toName: switched.toName,
+            });
           } else {
             // A newly created child (its creation was already confirmed via the save card): adopt.
             void adoptChild(tid, target);
@@ -288,7 +297,15 @@ export function ChatPage() {
       { message },
       streamHandlers(assistantId),
     );
-  }, [input, sending, threadId, activeChildId, navigate, startAssistant, streamHandlers]);
+  }, [
+    input,
+    sending,
+    threadId,
+    activeChildId,
+    navigate,
+    startAssistant,
+    streamHandlers,
+  ]);
 
   const respondConfirmation = useCallback(
     (approved: boolean) => {
@@ -461,7 +478,10 @@ function ThinkingTrace({
       {open && (
         <ul className="mt-2 space-y-1.5 pl-1">
           {steps.map((s) => (
-            <li key={s.node} className="flex items-center gap-2 text-muted-foreground">
+            <li
+              key={s.node}
+              className="flex items-center gap-2 text-muted-foreground"
+            >
               <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
               {s.label}
             </li>
@@ -543,7 +563,8 @@ function SwitchConfirmCard({
         Switch child
       </p>
       <p className="mb-3 mt-0.5 font-medium">
-        This chat looks like it&apos;s now about {to}. Keep recommending for {to}?
+        This chat looks like it&apos;s now about {to}. Keep recommending for{" "}
+        {to}?
       </p>
       <div className="flex gap-2">
         <Button size="sm" onClick={onKeep}>

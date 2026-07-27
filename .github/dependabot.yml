@@ -1,0 +1,64 @@
+version: 2
+updates:
+  # npm dependencies. Dependabot updates BOTH package.json and package-lock.json in sync.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # React and its DOM renderer must move together -- a version skew between them breaks at
+      # runtime, not at install time. The @types packages ride along for the same reason.
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      # shadcn/ui is a thin layer over Radix primitives; they share internals and are released as a
+      # set, so a partial bump is the one most likely to break a dialog or select.
+      radix:
+        patterns:
+          ["@radix-ui/*", "class-variance-authority", "tailwind-merge", "clsx"]
+      tailwind:
+        patterns: ["tailwindcss*", "autoprefixer", "postcss", "@tailwindcss/*"]
+      # The lint stack shares a plugin-API contract with typescript-eslint; bumping one alone is
+      # the classic "plugin requires eslint@^X" failure.
+      eslint:
+        patterns:
+          [
+            "eslint",
+            "@eslint/*",
+            "typescript-eslint",
+            "eslint-plugin-*",
+            "globals",
+          ]
+      # Vite and vitest share the Vite config/plugin API, so they are pinned as one unit -- vitest
+      # major lines track specific Vite majors (see the note in vitest.config.ts).
+      vite:
+        patterns: ["vite", "vitest", "@vitejs/*", "@vitest/*"]
+      # The test harness: RTL's renderer must match the React major, and jest-dom/jsdom are only
+      # ever used together with it.
+      testing:
+        patterns: ["@testing-library/*", "jsdom"]
+      forms:
+        patterns: ["react-hook-form", "@hookform/*", "zod"]
+
+  # Dockerfile base images: node:22-alpine (build stage) and nginx:1.27-alpine (serve stage). The
+  # sibling deploy repo watches the images IT pins (postgres/redis/alpine); these two live here
+  # because the Dockerfile is here.
+  #
+  # CAREFUL with the node bump: the Node major is pinned in THREE places that must agree --
+  # .nvmrc, `engines` in package.json, and the Dockerfile's node:22-alpine. Dependabot only edits
+  # the third, so a node major PR is incomplete until the other two are updated in the same commit.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5

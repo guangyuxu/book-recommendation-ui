@@ -69,7 +69,9 @@ export function Sidebar() {
             </p>
           )}
           {threads.data?.length === 0 && !threads.isLoading && (
-            <p className="px-2 py-2 text-sm text-muted-foreground">No chats yet.</p>
+            <p className="px-2 py-2 text-sm text-muted-foreground">
+              No chats yet.
+            </p>
           )}
           {threads.data?.map((t) => (
             <Link
@@ -77,7 +79,8 @@ export function Sidebar() {
               to={`/c/${t.thread_id}`}
               className={cn(
                 "block w-full truncate rounded-md px-2 py-2 text-left text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent",
-                location.pathname === `/c/${t.thread_id}` && "bg-sidebar-accent",
+                location.pathname === `/c/${t.thread_id}` &&
+                  "bg-sidebar-accent",
               )}
               title={t.title}
             >

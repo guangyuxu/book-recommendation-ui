@@ -5,7 +5,11 @@ import { ActiveChildContext, type ActiveChildState } from "./context";
 // Holds the active-child selection for the authed app. Defaults sensibly and self-heals: when the
 // children list loads (or changes), it auto-selects the sole child, keeps a still-valid selection,
 // and clears one that points at a deleted child.
-export function ActiveChildProvider({ children }: { children: React.ReactNode }) {
+export function ActiveChildProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const query = useChildren();
   const list = useMemo(() => query.data ?? [], [query.data]);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);

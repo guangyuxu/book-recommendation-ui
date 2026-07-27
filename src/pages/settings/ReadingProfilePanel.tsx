@@ -10,7 +10,7 @@ import { apiErrorMessage } from "@/lib/format";
 import { Field } from "@/components/forms/Field";
 import { TagsInput } from "@/components/forms/TagsInput";
 import { BoolSelect } from "@/components/forms/BoolSelect";
-import { useStepSave } from "@/components/forms/StepDialog";
+import { useStepSave } from "@/components/forms/stepSave";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,7 +68,8 @@ export function ReadingProfilePanel({
   const [form, setForm] = useState<FormState>(EMPTY);
 
   // A 404 means "no profile yet" — start from an empty form rather than surfacing an error.
-  const notFound = query.error instanceof ApiError && query.error.status === 404;
+  const notFound =
+    query.error instanceof ApiError && query.error.status === 404;
   const otherError = query.error && !notFound ? query.error : null;
 
   useEffect(() => {

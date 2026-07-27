@@ -1,0 +1,35 @@
+// The third project in the `tsc -b` build (see tsconfig.json's references).
+//
+// Without it `make typecheck` would skip tests/ entirely -- a test that no longer type-checks
+// against the module it tests would only surface when the test ran, not at the gate.
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // node for the vitest config's path handling; vite/client for the `import.meta.env` the
+    // modules under test read.
+    "types": ["node", "vite/client"],
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["tests", "vitest.config.ts"]
+}

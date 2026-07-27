@@ -7,7 +7,9 @@ const readingProfileKey = (childId: string) =>
 
 export function useReadingProfile(childId: string | null) {
   return useQuery({
-    queryKey: childId ? readingProfileKey(childId) : ["reading-profile", "none"],
+    queryKey: childId
+      ? readingProfileKey(childId)
+      : ["reading-profile", "none"],
     queryFn: () =>
       api.get<ReadingProfile>(`/family/children/${childId}/reading-profile`),
     enabled: !!childId,

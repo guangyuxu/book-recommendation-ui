@@ -7,7 +7,12 @@
 // refresh ultimately fails we drop to the logged-out state. SSE can't use EventSource (no auth
 // header), so we POST via fetch and parse the `text/event-stream` body ourselves.
 
-import { ApiError, getAccessToken, notifyAuthFailure, refreshAccessToken } from "./api";
+import {
+  ApiError,
+  getAccessToken,
+  notifyAuthFailure,
+  refreshAccessToken,
+} from "./api";
 import type {
   ChatMessage,
   ConfirmationRequest,
@@ -20,7 +25,8 @@ import type {
   ThreadSummary,
 } from "@/types/chat";
 
-const CHAT_BASE = import.meta.env.VITE_CHAT_BASE_URL ?? "http://localhost:8000/chat";
+const CHAT_BASE =
+  import.meta.env.VITE_CHAT_BASE_URL ?? "http://localhost:8000/chat";
 
 interface ChatFetchOptions {
   method?: string;
@@ -39,7 +45,10 @@ function authHeaders(hasBody: boolean): Record<string, string> {
 }
 
 // One fetch with Bearer auth + a single transparent refresh-retry on 401.
-async function chatFetch(path: string, opts: ChatFetchOptions = {}): Promise<Response> {
+async function chatFetch(
+  path: string,
+  opts: ChatFetchOptions = {},
+): Promise<Response> {
   const doFetch = () =>
     fetch(`${CHAT_BASE}${path}`, {
       method: opts.method ?? "GET",
@@ -64,7 +73,10 @@ async function chatFetch(path: string, opts: ChatFetchOptions = {}): Promise<Res
   return res;
 }
 
-async function chatJson<T>(path: string, opts: ChatFetchOptions = {}): Promise<T> {
+async function chatJson<T>(
+  path: string,
+  opts: ChatFetchOptions = {},
+): Promise<T> {
   const res = await chatFetch(path, opts);
   if (!res.ok) {
     throw new ApiError(res.status, res.statusText || "chat request failed");
@@ -76,9 +88,7 @@ async function chatJson<T>(path: string, opts: ChatFetchOptions = {}): Promise<T
 // --- JSON endpoints ---
 // Create a conversation bound to `childId` (chosen in the sidebar switcher). The child is fixed on
 // the thread server-side, so later turns/resume don't re-send it.
-export async function createThread(
-  childId?: string | null,
-): Promise<string> {
+export async function createThread(childId?: string | null): Promise<string> {
   const res = await chatJson<NewThreadResponse>("/threads", {
     method: "POST",
     body: { child_id: childId ?? null },
@@ -139,7 +149,12 @@ export function streamTurn(
   const controller = new AbortController();
   // The child is bound to the thread at creation; the server reads it from thread metadata.
   const body: Record<string, unknown> = { message: turn.message };
-  void runStream(`/threads/${threadId}/messages`, body, handlers, controller.signal);
+  void runStream(
+    `/threads/${threadId}/messages`,
+    body,
+    handlers,
+    controller.signal,
+  );
   return controller;
 }
 
@@ -211,7 +226,8 @@ function dispatchFrame(frame: string, handlers: StreamHandlers): void {
   const dataLines: string[] = [];
   for (const line of frame.split("\n")) {
     if (line.startsWith("event:")) event = line.slice(6).trim();
-    else if (line.startsWith("data:")) dataLines.push(line.slice(5).replace(/^ /, ""));
+    else if (line.startsWith("data:"))
+      dataLines.push(line.slice(5).replace(/^ /, ""));
   }
   if (dataLines.length === 0) return;
   let data: unknown;
@@ -275,7 +291,9 @@ function extractText(content: unknown): string {
 }
 
 // --- history / thread mapping ---
-export function historyToMessages(states: ThreadStateSnapshot[]): ChatMessage[] {
+export function historyToMessages(
+  states: ThreadStateSnapshot[],
+): ChatMessage[] {
   // Newest snapshot first; its values.messages is the full accumulated list.
   const messages = states[0]?.values?.messages ?? [];
   const out: ChatMessage[] = [];
