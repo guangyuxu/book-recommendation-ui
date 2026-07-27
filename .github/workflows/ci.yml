@@ -36,7 +36,7 @@ jobs:
 
       # node-version-file, not a literal: .nvmrc is the ONE place the Node version is pinned, and
       # the Dockerfile's node:22-alpine matches it. cache: npm keys off package-lock.json.
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
