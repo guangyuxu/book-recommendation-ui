@@ -1,0 +1,47 @@
+# Local git hooks.
+#
+# The make-* hooks are each a SINGLE make target — no tool commands are restated here, so the
+# Makefile CHECKS section stays the one source of truth (versions from package-lock.json, config
+# from eslint.config.js / .prettierrc / tsconfig*.json) and they cannot drift from CI:
+#   pre-commit (every commit) -> `make check`  — lint + test (fast, offline).
+#   pre-push   (before push)  -> `make ci`     — lint + coverage + production build.
+# Both are offline. Dependency auditing runs on a schedule (.github/workflows/audit.yml), not here.
+#
+# gitleaks is the ONE exception: it is not an npm tool, so it comes from its own pinned repo rather
+# than a make target. It scans staged changes for secrets on every commit. (Pinned to the same rev
+# as the four sibling repos — bump them together.)
+#
+# WHERE pre-commit ITSELF COMES FROM: the Python siblings get it via `uv run pre-commit`; this repo
+# has no uv, and adding pre-commit to devDependencies would mean two package managers owning the
+# same tool. So it is installed once, globally, outside the repo:
+#   pipx install pre-commit     (or `brew install pre-commit`)
+# One-time setup (installs BOTH make hook types thanks to default_install_hook_types):
+#   pre-commit install
+# Run manually: `pre-commit run --all-files` (check) / add `--hook-stage pre-push` for ci.
+default_install_hook_types: [pre-commit, pre-push]
+
+repos:
+  - repo: local
+    hooks:
+      - id: make-check
+        name: make check (lint + test)
+        entry: make check
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: make-ci
+        name: make ci (lint + tests-with-coverage + build)
+        entry: make ci
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+  # Secret scanning — blocks commits that would leak credentials/keys. Feature-complete tool
+  # pinned to a release; refresh with `pre-commit autoupdate`.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.2
+    hooks:
+      - id: gitleaks

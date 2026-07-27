@@ -83,7 +83,8 @@ export function ReadingHistoryPanel({ childId }: { childId: string }) {
                   </p>
                   {(entry.started_at || entry.finished_at) && (
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(entry.started_at)} – {formatDate(entry.finished_at)}
+                      {formatDate(entry.started_at)} –{" "}
+                      {formatDate(entry.finished_at)}
                     </p>
                   )}
                 </div>
@@ -109,9 +110,7 @@ export function ReadingHistoryPanel({ childId }: { childId: string }) {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No books logged yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No books logged yet.</p>
         )}
       </QueryState>
 
@@ -128,9 +127,7 @@ export function ReadingHistoryPanel({ childId }: { childId: string }) {
           onOpenChange={(open) => !open && setEditing(null)}
           mode="edit"
           entry={editing}
-          onSubmit={(body) =>
-            updateEntry.mutateAsync({ id: editing.id, body })
-          }
+          onSubmit={(body) => updateEntry.mutateAsync({ id: editing.id, body })}
         />
       )}
 

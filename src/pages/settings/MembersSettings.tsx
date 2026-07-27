@@ -85,7 +85,9 @@ export function MembersSettings() {
                     size="icon"
                     variant="ghost"
                     disabled={isSelf}
-                    title={isSelf ? "You can't remove yourself here" : undefined}
+                    title={
+                      isSelf ? "You can't remove yourself here" : undefined
+                    }
                     onClick={() => setDeleting(member)}
                     aria-label="Remove member"
                   >

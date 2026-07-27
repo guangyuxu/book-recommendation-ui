@@ -62,7 +62,9 @@ export function ChildSwitcher() {
               {activeChild ? initial(activeChild.display_name) : "?"}
             </span>
             <span className="flex-1 truncate text-left">
-              {activeChild ? childLabel(activeChild.display_name) : "Select a child"}
+              {activeChild
+                ? childLabel(activeChild.display_name)
+                : "Select a child"}
             </span>
             <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
           </button>
@@ -79,7 +81,9 @@ export function ChildSwitcher() {
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-medium">
                 {initial(c.display_name)}
               </span>
-              <span className="flex-1 truncate">{childLabel(c.display_name)}</span>
+              <span className="flex-1 truncate">
+                {childLabel(c.display_name)}
+              </span>
               {c.id === activeChildId && <Check className="h-4 w-4 shrink-0" />}
             </DropdownMenuItem>
           ))}

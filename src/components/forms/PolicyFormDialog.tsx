@@ -14,12 +14,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Field } from "@/components/forms/Field";
 import { TagsInput } from "@/components/forms/TagsInput";
+import { KeyValueEditor } from "@/components/forms/KeyValueEditor";
 import {
-  KeyValueEditor,
   objectToRows,
   rowsToObject,
   type KVRow,
-} from "@/components/forms/KeyValueEditor";
+} from "@/components/forms/keyValue";
 import { apiErrorMessage } from "@/lib/format";
 import type { Policy, PolicyCreate } from "@/types/api";
 

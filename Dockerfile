@@ -1,8 +1,17 @@
-# Multi-stage build: compile the Vite SPA, then serve it from nginx which also reverse-proxies the
-# two backends so the browser only ever sees one same-origin (no CORS, no ports in the browser):
-#   /api/accounts/* -> accounts service     /api/chat/* -> BFF/service (SSE)
-# Upstream hostnames `accounts` and `service` resolve in both docker-compose and k8s (Services are
-# named identically there).
+# Multi-stage build: compile the Vite SPA, then serve the static bundle from nginx.
+#
+# nginx serves the SPA ONLY -- it does no API reverse-proxying (see nginx.conf, which is the source
+# of truth). The browser calls both backends DIRECTLY by absolute URL (VITE_API_BASE_URL ->
+# accounts, VITE_CHAT_BASE_URL -> the BFF/service), and both are CORS-enabled for this origin. The
+# BFF remains the auth boundary; the browser never talks to the agent.
+#
+# Because those URLs are baked in at BUILD time (Vite inlines VITE_* into the bundle), a deployment
+# that isn't on the default localhost ports must pass them as build args/env to `npm run build`,
+# not at container start.
+#
+# The build stage type-checks tests/ too (`npm run build` -> `tsc -b` covers all three tsconfig
+# projects), so devDependencies are needed here. None of that reaches the final image -- only
+# /app/dist is copied forward.
 
 # --- build ---
 FROM node:22-alpine AS build

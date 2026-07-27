@@ -1,37 +1,12 @@
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+// The row<->object mapping (and the KVRow shape) lives in keyValue.ts so this file exports only
+// the component -- see that file for why.
+import type { KVRow } from "@/components/forms/keyValue";
 
 // Edits a free-form dict (the backend's `content_preferences: dict[str, Any]`) as key/value rows.
-// Values are entered as text; on save each value is JSON-parsed when possible (so `true`, `12`,
-// `["a","b"]` become typed), otherwise kept as a plain string.
-
-export interface KVRow {
-  key: string;
-  value: string;
-}
-
-export function objectToRows(obj: Record<string, unknown> | undefined): KVRow[] {
-  if (!obj) return [];
-  return Object.entries(obj).map(([key, value]) => ({
-    key,
-    value: typeof value === "string" ? value : JSON.stringify(value),
-  }));
-}
-
-export function rowsToObject(rows: KVRow[]): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const { key, value } of rows) {
-    const k = key.trim();
-    if (!k) continue;
-    try {
-      out[k] = JSON.parse(value);
-    } catch {
-      out[k] = value;
-    }
-  }
-  return out;
-}
+// Values are entered as text; keyValue.ts handles the typed round-trip on save.
 
 interface KeyValueEditorProps {
   rows: KVRow[];

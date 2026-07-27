@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-
-// A step returns true from its save when the write succeeded (advance), false to stay put.
-type SaveFn = () => Promise<boolean>;
+// The registration context + the useStepSave hook steps call live in stepSave.ts so this file
+// exports only components -- see that file for why.
+import { RegisterContext, type SaveFn } from "@/components/forms/stepSave";
 
 export interface Step {
   value: string;
@@ -23,22 +23,6 @@ export interface Step {
   // (which persist per-row on their own) omit this and get plain "Next"/"Done" navigation.
   hasSave?: boolean;
   content: React.ReactNode;
-}
-
-const RegisterContext = React.createContext<
-  (value: string, fn: SaveFn | null) => void
->(() => {});
-
-// Form steps call this to expose their save to the shared footer. The latest closure is always
-// used (via a ref), and the handler is torn down when the step unmounts.
-export function useStepSave(value: string, save: SaveFn): void {
-  const register = React.useContext(RegisterContext);
-  const saveRef = React.useRef(save);
-  saveRef.current = save;
-  React.useEffect(() => {
-    register(value, () => saveRef.current());
-    return () => register(value, null);
-  }, [register, value]);
 }
 
 interface StepDialogProps {
@@ -113,7 +97,11 @@ export function StepDialog({
           <Tabs value={active} onValueChange={onActiveChange}>
             <TabsList className="flex h-auto flex-wrap justify-start">
               {steps.map((s) => (
-                <TabsTrigger key={s.value} value={s.value} disabled={s.disabled}>
+                <TabsTrigger
+                  key={s.value}
+                  value={s.value}
+                  disabled={s.disabled}
+                >
                   {s.label}
                 </TabsTrigger>
               ))}

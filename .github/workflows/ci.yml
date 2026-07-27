@@ -1,0 +1,97 @@
+# CI: three parallel jobs.
+#   checks  — runs `make ci` (lint + coverage + build): the SAME command you run locally, the
+#             single ground truth. Only infrastructure that make cannot own lives here (node/npm
+#             cache setup, dependency install, coverage-artifact upload); every actual check lives
+#             in the Makefile CHECKS section, so CI and local cannot drift.
+#   docker  — image build check.
+#   secrets — gitleaks secret scan (server-side backstop for the pre-commit hook).
+# Unlike the Python siblings these jobs do NOT run in a container: actions/setup-node gives a
+# pinned Node straight on the runner (and no `apt-get install make` step, since the runner image
+# ships make). Dependency auditing (npm audit) is deliberately elsewhere (scheduled audit.yml) so a
+# network / advisory hiccup never blocks a code PR.
+
+name: CI
+
+on:
+  push:
+    branches: ["master", "dev"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel earlier runs on the same branch/PR when a new push arrives.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── 1. Checks (== `make ci`) ─────────────────────────────────────────────────
+  checks:
+    name: Checks (make ci)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # node-version-file, not a literal: .nvmrc is the ONE place the Node version is pinned, and
+      # the Dockerfile's node:22-alpine matches it. cache: npm keys off package-lock.json.
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` (not `npm install`): installs exactly what package-lock.json pins and fails if the
+      # lockfile is out of sync with package.json. Same command as `make install` and the Dockerfile.
+      - name: Install dependencies
+        run: npm ci
+
+      # THE ground truth: byte-for-byte the same command developers run locally.
+      - name: make ci
+        run: make ci
+
+      # coverage data was produced by `make ci` (its coverage target, reporter: lcov).
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
+  # ── 2. Docker build ──────────────────────────────────────────────────────────
+  # Builds the real deployable: the multi-stage image that compiles the SPA and serves it from
+  # nginx. `make ci` already proves `vite build` works on the runner; this proves it also works
+  # inside the pinned node:22-alpine stage, with only what .dockerignore lets through.
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set image tag
+        id: tag
+        run: echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: docker build -t book-recommendation-ui:${{ steps.tag.outputs.tag }} .
+
+  # ── 3. Secret scan ───────────────────────────────────────────────────────────
+  # Server-side backstop for the gitleaks pre-commit hook: catches secrets even if a contributor
+  # never ran `pre-commit install`. fetch-depth: 0 so it scans full history on push.
+  # NOTE: gitleaks-action is free for public repos; a private org needs GITLEAKS_LICENSE in env.
+  # The scan step is skipped for Dependabot PRs: their GITHUB_TOKEN is read-only and has no access
+  # to repo secrets, so gitleaks-action errors out, and a version-only bump cannot introduce a
+  # secret anyway. The job itself still runs (reports green, satisfying a required check); the
+  # full-history scan on push to master remains the real backstop.
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        if: github.actor != 'dependabot[bot]'
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
