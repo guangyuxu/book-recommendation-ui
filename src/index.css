@@ -1,6 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Tailwind v4 reads its theme from CSS, not from a JS config, unless one is pointed at
+   explicitly. The theme here (shadcn's HSL-channel custom properties, the radius scale, the
+   accordion keyframes, and the tailwindcss-animate plugin) still lives in tailwind.config.js,
+   so load it rather than duplicating it in @theme. */
+@config "../tailwind.config.js";
 
 @layer base {
   :root {
