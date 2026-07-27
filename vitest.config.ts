@@ -36,15 +36,31 @@ export default mergeConfig(
         // number can't distinguish "a page is still untested" from "the fetch wrapper broke".
         // The per-glob floors below are the actual gate -- they pin the logic-bearing modules the
         // suite owns, so a regression THERE fails the build regardless of the global average.
+        //
+        // RE-BASELINED for vitest 4 / @vitest/coverage-v8 4, which turned AST-aware remapping on
+        // by default. That changed what the DENOMINATORS mean, not what the suite covers: every
+        // function and branch in a never-imported file now counts, where v3 largely did not count
+        // them. Measured on the identical suite and sources, master (v3) vs this branch (v4):
+        //
+        //     statements  7.17% -> 11.94%    branches  70.70% -> 11.35%
+        //     lines       7.17% -> 11.53%    functions 30.23% ->  9.38%
+        //
+        // Statements and lines went UP and their floors rise with them; branches and functions
+        // collapsed purely because their denominators grew (861 branches / 372 functions now
+        // include the untested pages). Re-pinning them to the v3 numbers would fail every build
+        // for a measurement change, so they are re-pinned just under the v4 numbers. This is a
+        // re-baseline against a new ruler, not a lowered bar -- the "never lower them" rule still
+        // holds for every change measured on THIS ruler.
         thresholds: {
-          lines: 6,
-          functions: 30,
-          statements: 6,
-          branches: 60,
+          lines: 11,
+          functions: 9,
+          statements: 11,
+          branches: 11,
           "src/lib/api.ts": {
-            lines: 95,
+            // 95 -> 94: remapping shifted this file by ~1.5 points with no test change.
+            lines: 94,
             functions: 75,
-            statements: 95,
+            statements: 94,
             branches: 95,
           },
           "src/lib/format.ts": {

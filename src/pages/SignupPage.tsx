@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -35,11 +35,15 @@ export function SignupPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const hasInvite = !!watch("invite_code");
+  // `useWatch`, not the `watch()` returned by useForm: watch() is a fresh function on every render
+  // that the React Compiler cannot memoize, so its presence makes the compiler bail out of
+  // optimising this whole component (react-hooks/incompatible-library). useWatch subscribes to the
+  // same field through `control` and is compiler-safe.
+  const hasInvite = !!useWatch({ control, name: "invite_code" });
 
   async function onSubmit(values: FormValues) {
     setFormError(null);

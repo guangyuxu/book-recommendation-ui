@@ -73,13 +73,13 @@ export function StepDialog({
     const save = step?.hasSave ? handlers.current[step.value] : undefined;
     if (save) {
       setBusy(true);
-      let ok = false;
       try {
-        ok = await save();
+        // A falsy result means the write failed: stay on this step. `finally` still clears the
+        // busy flag on the early return, and on a throw the exception propagates as before.
+        if (!(await save())) return;
       } finally {
         setBusy(false);
       }
-      if (!ok) return;
     }
     if (nextStep) onActiveChange(nextStep.value);
     else onOpenChange(false);

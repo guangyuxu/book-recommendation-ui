@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { GenderSelect } from "@/components/forms/GenderSelect";
 import { TagsInput } from "@/components/forms/TagsInput";
 import { StepDialog, type Step } from "@/components/forms/StepDialog";
 import { useStepSave } from "@/components/forms/stepSave";
+import { useSyncOnChange } from "@/lib/syncOnChange";
 import { useCreateChild, useUpdateChild } from "@/api/children";
 import { ReadingProfilePanel } from "@/pages/settings/ReadingProfilePanel";
 import { ReadingHistoryPanel } from "@/pages/settings/ReadingHistoryPanel";
@@ -32,12 +33,13 @@ export function ChildFormDialog({
   const [current, setCurrent] = useState<Child | null>(child ?? null);
   const [active, setActive] = useState("basic");
 
-  useEffect(() => {
+  // Re-seed the wizard when it (re)opens, and when a fresh server row arrives while it is open.
+  useSyncOnChange([open, child], () => {
     if (open) {
       setCurrent(child ?? null);
       setActive("basic");
     }
-  }, [open, child]);
+  });
 
   const childId = current?.id ?? null;
   const locked = !childId;
